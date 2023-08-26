@@ -1,4 +1,4 @@
-# Elections.BBMM
+# Indentifying voting blocs from referendum data
 The Elections.BBMM package provides a set of tools for applying the Beta-binomial mixture model to longitudinal referendum data. The purpose of this model is to identify voting blocs -- long-term patterns of vote similarity -- across a set of political districts (e.g. precincts, municipalities, counties). The model results can be used to infer:
 * the distribution on the number of voting blocs
 * the proportion of each voting bloc in each district
