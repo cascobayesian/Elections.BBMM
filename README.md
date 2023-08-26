@@ -1,5 +1,5 @@
 # Identifying voting blocs from referendum data
-## : what a mixture model can do for the analysis of political cultures
+
 The Elections.BBMM package provides a set of tools for applying the Beta-binomial mixture model to longitudinal referendum data. The purpose of this model is to identify voting blocs -- long-term patterns of vote similarity -- across a set of political districts (e.g. precincts, municipalities, counties). The model results can be used to infer:
 * the distribution on the number of voting blocs
 * the proportion of each voting bloc in each district
@@ -15,3 +15,6 @@ This form of data analysis might appeal to political scientists, sociologists, o
 * Observe and understand long-term political/cultural structures and dynamics;
 * Identify questions that provide strong distinction between voting blocs; and,
 * Identify questions that run counter to the inferred voting blocs (questions that behave strangely relative to the model's expectations).
+
+## A NOTE ON INSTALLATION
+- The R package here should install without difficulty on most machines. However, as the packaage has a dependency with Rarmadillo, you may need to tweak the install flags to ensure that the gcc compile has access to the right paths. To aid with this process, I've provided a tar ball as well that should allow for an easier installation. 
