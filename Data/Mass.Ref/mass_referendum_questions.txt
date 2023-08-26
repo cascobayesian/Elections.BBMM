@@ -1,0 +1,65 @@
+
+2000
+Q1 LRCA 	Question 1 	Admin. of gov't 	Require that the periodic redrawing of district boundaries for state legislators new census data. 	Approved
+Q2 LRCA 	Question 2 	Civil rights 	Limit the voting rights of incarcerated felons. 	Approved
+Q3 CISS 	Question 3 	Animal rights 	Prohibit dog races where betting or wagering occurs. 	Defeated
+Q4 CISS 	Question 4 	Tax reform 	Lower the state personal income tax to 5%. 	Approved
+Q5 CISS 	Question 5 	Healthcare 	Require health insurance carries to provide certain rights to patients and health care professionals. 	Defeated
+Q6 CISS 	Question 6 	Tax reform 	Corporate excise tax credit for Massachusetts tolls and motor vehicle excise taxes. 	Defeated
+Q7 CISS 	Question 7 	Tax reform 	State income tax deduction for chariable contributions. 	Approved
+Q8 CISS 	Question 8 	Law enforcement 	Creation of a state Drug Treatment Trust Fund. 	Defeated
+
+2002:
+Q9	IndISS 	Question 1 	Tax reform 	No income or other gain realized would be subject to the state personal income tax 	Defeated
+Q10	IndISS 	Question 2 	English 	All public school children must be taught English 	Approved
+Q11	Advisory 	Question 3 	Elections and campaigns 	Taxpayer money being used to fund political campaigns for public office 	Defeated
+
+2006:
+Q12	IndISS 	Question 1 	Alcohol 	An initiative to allow cities and towns to issue wine licenses. 	Defeated
+Q13 IndISS 	Question 2 	Elections 	Allows candidates to be nominated for the same office 	Defeated
+Q14	IndISS 	Question 3 	Labor 	Allows collective bargaining for child care providers. 	Defeated
+
+2008:
+Q15	IndISS 	Question 1 	Taxes 	Repeal state income tax 	Defeated
+Q16	IndISS 	Question 2 	Marijuana policy 	Decriminalize small amounts of marijuana 	Approved
+Q17	IndISS 	Question 3 	Animal rights 	Prohibit (professional) dog racing 	Approved
+
+2010
+Q18	IndISS 	Question 1 	Taxes 	Sales tax eliminated for alcohol sales in the state 	Approved
+Q19	IndISS 	Question 2 	Housing 	Repeal a housing law 	Defeated
+Q20	IndISS 	Question 3 	Taxes 	Roll 6.25% sales tax back to 3% 	Defeated
+
+2012
+Q21	IndISS 	Question 1 	Business 	Deals with vehicle owner and business protections in the state. 	Approved
+Q22	IndISS 	Question 2 	Assisted death 	Would establish an "Act Relative to Death with Dignity." 	Defeated
+Q23	IndISS 	Question 3 	Marijuana 	Would allow for the use of medical marijuana in the state. 	Approved
+
+2014
+Q24	CISS 	Question 1 	Gas taxes 	Repeals 2013 law that automatically increases gas taxes according to inflation 	Approved
+Q25	CISS 	Question 2 	Environment 	Expands the state’s beverage container recycling law to include all non-alcoholic containers 	Defeated
+Q26	CISS 	Question 3 	Gambling 	Repeals a 2011 law allowing resort casinos 	Defeated
+Q27	CISS 	Question 4 	Labor 	Entitles certain employees to earn and utilize paid sick days 	Approved
+
+2016
+Q28	IndISS 	Question 1 	Gambling 	Additional slots-only casino license 	
+Defeated
+Q29	IndISS 	Question 2 	Education 	Authorization of up to 12 new charter schools per year 	
+Defeated
+Q30	IndISS 	Question 3 	Animals 	Prohibit certain methods of farm animal containment 	
+Approved
+Q31	IndISS 	Question 4 	Marijuana 	Legalize recreational marijuana for individuals at least 21 years old 	
+Approved
+
+2018
+Q32	IndISS 	Question 1 	Healthcare 	Sets limits on the number of patients a nurse can be assigned to 	
+Defeated
+Q33	IndISS 	Question 2 	Campaign finance and Definition of a corporation 	Creates citizens commission to advocate for changes to the U.S. Constitution regarding political spending and corporate personhood 	
+Approved
+Q34	VR 	Question 3 	LGBT issues 	Concerns a law prohibiting discrimination based on gender identity 	
+Approved
+
+2020
+Q35	IndISS 	Question 1 	Business regulation 	Concerns access to mechanical data in a vehicle's on-board diagnostics or telematics system 	
+Approved
+Q36	IndISS 	Question 2 	Elections 	Enacts a ranked-choice voting system for elections in Massachusetts 	
+Defeated
