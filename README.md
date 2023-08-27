@@ -8,7 +8,7 @@ The Elections.BBMM package provides a set of tools for applying the Beta-binomia
 * an information-theoretic visualization of which questions drive distinctions
 * the topological structure of the voting blocs
 
-The functions in this package let you execute all of the steps necessary to complete these analyses, including the BD-MCMC algorithm that generate samples from the posterior distribution. It also include the scripts necessary to generate the various posterior visualizations that might be of interest. 
+The functions in this package let you execute all of the steps necessary to complete these analyses, including the BD-MCMC algorithm that generate samples from the posterior distribution. It also includes the scripts necessary to generate the various posterior visualizations that might be of interest. 
 
 This form of data analysis might appeal to political scientists, sociologists, or historians. Why might you want to perform this analysis:
 * Identify political voting blocs and their presence in a set of communities;
