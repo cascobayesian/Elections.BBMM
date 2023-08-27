@@ -12,7 +12,7 @@ The functions in this package let you execute all of the steps necessary to comp
 
 This form of data analysis might appeal to political scientists, sociologists, or historians. Why might you want to perform this analysis:
 * Identify political voting blocs and their presence in a set of communities;
-* Observe and understand long-term political/cultural structures and dynamics;
+* Use voting blocs to identify long-term political/cultural structures and dynamics;
 * Identify questions that provide strong distinction between voting blocs; and,
 * Identify questions that run counter to the inferred voting blocs (questions that behave strangely relative to the model's expectations).
 
