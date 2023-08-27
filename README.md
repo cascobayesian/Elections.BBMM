@@ -16,5 +16,11 @@ This form of data analysis might appeal to political scientists, sociologists, o
 * Identify questions that provide strong distinction between voting blocs; and,
 * Identify questions that run counter to the inferred voting blocs (questions that behave strangely relative to the model's expectations).
 
+## TUTORIAL ON USING ELECTIONS.BBMM
+
+If you'd like to run the package and use the analyses, I suggest first working through the package tutorial. This gives a brief overview of the data format, running the MCMC, and then executing the post-processing scripts.
+
+[Link to wiki tutorial](https://github.com/cascobayesian/Elections.BBMM/wiki/Tutorial-to-use-Elections.BBMM)
+
 ## A NOTE ON INSTALLATION
 - The R package here should install without difficulty on most machines. However, as the packaage has a dependency with Rarmadillo, you may need to tweak the install flags to ensure that the gcc compile has access to the right paths. To aid with this process, I've provided a tar ball as well that should allow for an easier installation. 
