@@ -1,11 +1,43 @@
 Package: Elections.BBMM
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Voting Blocs from Referendum Returns with Beta-Binomial Mixtures
+Version: 1.0.0
+Authors@R: c(
+    person("John D.", "O'Brien", email = "jobrien@bowdoin.edu", role = c("aut", "cre", "cph")))
+Description: Identifies voting blocs - groups of places that vote alike
+    across many referendums - by fitting a beta-binomial mixture model to a
+    panel of two-option election returns (units such as precincts or towns by
+    questions). Provides a tempered expectation-maximisation fit with a fixed
+    dispersion and model-selection rules, a fixed-K Markov chain Monte Carlo
+    sampler for the coarsened posterior of Miller and Dunson (2019)
+    <doi:10.1080/01621459.2018.1469995> with split-merge moves after Jain
+    and Neal (2004) <doi:10.1198/1061860043001>, and stepping-stone
+    sequential Monte Carlo (Del Moral, Doucet and Jasra 2006
+    <doi:10.1111/j.1467-9868.2006.00553.x>) for the marginal likelihood of
+    each number of blocs. Posterior summaries, maps, bloc profiles and
+    Jensen-Shannon principal-coordinate plots work on the output of all
+    three. Includes Maine's statewide referendums of 2008-2025 by town.
+License: GPL (>= 3)
+URL: https://github.com/cascobayesian/Elections.BBMM
+BugReports: https://github.com/cascobayesian/Elections.BBMM/issues
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
+Depends: R (>= 4.1.0)
+Imports:
+    ggplot2 (>= 3.4.0),
+    grDevices,
+    parallel,
+    Rcpp,
+    stats,
+    utils
+LinkingTo: Rcpp
+Suggests:
+    knitr,
+    rmarkdown,
+    RSpectra,
+    sf,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1

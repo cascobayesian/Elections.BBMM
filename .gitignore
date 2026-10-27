@@ -2,3 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
+src/*.o
+src/*.so
+src/*.dll
+*.Rcheck/
+Elections.BBMM_*.tar.gz
+inst/doc
+data-raw/tutorial_cache/
