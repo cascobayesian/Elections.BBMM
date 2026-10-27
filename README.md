@@ -79,6 +79,10 @@ For unit *i* in bloc *k*, the Yes count on question *q* is BetaBinomial(*M*<sub>
 
 The stepping-stone code has been checked against exact evidences computed by enumeration and quadrature on small data sets (errors below 0.07 nats), and its kernel against exact tempered posteriors over partitions.
 
+## Acknowledgements
+
+Nathan Kellerman contributed to the EM algorithm as part of an undergraduate honors thesis, *A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data* (Bowdoin College, 2026). Aaron Kaufman (New York University Abu Dhabi) helped develop the tools for exploring the model results.
+
 ## Citation
 
 Kaufman, A. and O'Brien, J. D. The structure of conflict in local politics. Working paper.

@@ -3,7 +3,13 @@ Type: Package
 Title: Voting Blocs from Referendum Returns with Beta-Binomial Mixtures
 Version: 1.0.0
 Authors@R: c(
-    person("John D.", "O'Brien", email = "jobrien@bowdoin.edu", role = c("aut", "cre", "cph")))
+    person("John D.", "O'Brien", email = "jobrien@bowdoin.edu", role = c("aut", "cre", "cph")),
+    person("Nathan", "Kellerman", role = "ctb",
+           comment = paste("EM algorithm, developed in an undergraduate honors thesis",
+                           "'A Rapid Algorithm for Inferring Latent Mixture Structure in",
+                           "Replicate Social Science Data' (Bowdoin College, 2026)")),
+    person("Aaron", "Kaufman", role = "ctb",
+           comment = "New York University Abu Dhabi; tools for exploring model results"))
 Description: Identifies voting blocs - groups of places that vote alike
     across many referendums - by fitting a beta-binomial mixture model to a
     panel of two-option election returns (units such as precincts or towns by
