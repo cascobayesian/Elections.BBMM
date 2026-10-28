@@ -125,8 +125,9 @@ bloc_summary.bbmm_evidence <- function(fit, data, n_blocs = NULL, ...) {
   }
   keep <- !vapply(Z, is.null, TRUE)
   out <- draws_summary(do.call(rbind, Z[keep]), unlist(W[keep]), pars, unlist(src[keep]), data, n_blocs)
-  out$method <- sprintf("stepping-stone SMC pooled over K = %s by p(K | x), zeta = %g",
-                        paste(unique(fit$runs$K), collapse = ","), fit$zeta)
+  Ks <- sort(unique(fit$runs$K))
+  k_lab <- if (length(Ks) > 2 && all(diff(Ks) == 1)) paste0(Ks[1], "-", Ks[length(Ks)]) else paste(Ks, collapse = ",")
+  out$method <- sprintf("stepping-stone SMC pooled over K = %s by p(K | x), zeta = %g", k_lab, fit$zeta)
   out
 }
 

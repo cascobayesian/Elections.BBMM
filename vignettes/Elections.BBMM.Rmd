@@ -86,9 +86,10 @@ likelihood treats every small, persistent difference between towns as decisive, 
 blocs keeps growing with the data. All three fitting methods therefore raise the likelihood to a
 power $\zeta \le 1$ (the coarsened posterior of Miller and Dunson, 2019): roughly, they look for
 structure that would survive if the data were a fraction $\zeta$ of their size. Smaller $\zeta$
-gives fewer, broader blocs. This tutorial uses $\zeta = 0.3$ throughout. Treat $\zeta$ as a choice
-about the grain of the analysis, and check that the conclusions you care about hold at neighbouring
-values.
+gives fewer, broader blocs. This tutorial uses the untempered model, $\zeta = 1$, throughout, so
+you can see what the full likelihood does with data this large; the same analysis at $\zeta = 0.3$
+finds five blocs instead of sixteen. Treat $\zeta$ as a choice about the grain of the analysis, and
+check that the conclusions you care about hold at neighbouring values.
 
 # 3. Fast: tempered EM
 
@@ -96,8 +97,8 @@ values.
 several random starts each, holding the concentration fixed at $\nu = 100$ for every bloc.
 
 ```{r em-run, eval = FALSE}
-# long: about 1 minute on 10 cores, 4 minutes on 4
-sel <- bbmm_em_select(maine, K = 1:12, zeta = 0.3, n_starts = 10, seed = 2026, cores = 10)
+# long: about 1 minute on 12 cores, 4 minutes on 4
+sel <- bbmm_em_select(maine, K = 1:16, zeta = 1, n_starts = 10, seed = 2026, cores = 12)
 ```
 ```{r em-load, include = FALSE}
 sel <- res$sel
@@ -122,10 +123,12 @@ plot_em_selection(sel)
 ```
 
 On Maine the rules disagree: BIC picks `r sel$selected[["BIC"]]` blocs, the 5% rule
-`r sel$selected[["min_share_5%"]]` and the 3% rule `r sel$selected[["min_share_3%"]]`. From *K* = 5 on,
-fewer than half of the starts reach the best fit, and beyond *K* = 7 only one does: the extra blocs
-are not well determined. We carry the 5% fit forward; the stepping-stone sampler in the next section
-addresses the number of blocs directly.
+`r sel$selected[["min_share_5%"]]` and the 3% rule `r sel$selected[["min_share_3%"]]`. The
+log-likelihood keeps rising all the way to *K* = 16 -- the untempered likelihood always finds
+something to gain from another bloc -- and from *K* = 5 on fewer than half of the starts reach the
+best fit; from *K* = 7 on only one does, so the extra blocs are not well determined. We carry the 5%
+fit forward as a coarse summary; the stepping-stone sampler in the next section addresses the number
+of blocs directly.
 
 Pick a fit and summarise it:
 
@@ -140,7 +143,7 @@ s_em
 plot_bloc_map(s_em, maine_towns())
 ```
 
-To fit a single *K*, use `bbmm_em(maine, K = 6, zeta = 0.3)`. EM also returns each town's
+To fit a single *K*, use `bbmm_em(maine, K = 6, zeta = 1)`. EM also returns each town's
 membership probabilities (`fit_em$gamma`); at this $\zeta$ almost all are close to 0 or 1, which
 says more about the fixed-$\nu$ model than about how certain the partition is.
 
@@ -156,21 +159,23 @@ sample of partitions from the posterior at its *K*.
 The sampler moves a population of 200 "particles" from the prior to the tempered posterior through a
 few hundred intermediate distributions, so it is far slower than EM.
 
-> **How long will this take?** On Maine (462 towns x 72 questions), one *K* took between
-> `r mins(min(res$ss_seconds))` and `r mins(max(res$ss_seconds))` on `r res$threads` threads, and
-> *K* = 2 to 10 took `r mins(sum(res$ss_seconds))` in all. Time grows with units x questions and with
-> *K*: a state's precincts (thousands of units) can take hours to days per *K*. Start with a small
-> range of *K* around the EM answer, use as many threads as you can spare (`n_threads`), and for
-> big data run each *K* as a separate job and combine them with `evidence_from_fits()`.
+> **How long will this take?** On Maine (462 towns x 72 questions) at $\zeta = 1$, one *K* took
+> from about 4 minutes (*K* = 2) to about 17 minutes (*K* = 16) on `r res$threads` threads of an
+> otherwise idle machine, and *K* = 2 to 20 took about four hours in all, plus an hour for two
+> replicates. Time grows with units x questions, with *K*, and with $\zeta$ (a larger $\zeta$
+> means a longer path from prior to posterior). A state's precincts (thousands of units) can take
+> hours to days per *K*. Start with a range of *K* around the EM answer, extend it until the
+> evidence turns down, use as many threads as you can spare (`n_threads`), and for big data run
+> each *K* as a separate job and combine them with `evidence_from_fits()`.
 
 ```{r ss-run, eval = FALSE}
-# long: about 70 minutes on 10 threads (plus two extra replicates, 20 minutes)
-ev <- bbmm_evidence(maine, K = 2:10, zeta = 0.3, n_threads = 10, seed = 2026)
+# long: about 4 hours on 12 threads (plus two extra replicates, 1 hour)
+ev <- bbmm_evidence(maine, K = 2:20, zeta = 1, n_threads = 12, seed = 2026)
 
 # or, one K at a time (e.g. as separate jobs), then combine:
-fits <- lapply(2:10, function(K) bbmm_ss(maine, K = K, zeta = 0.3, seed = 2026 + K, n_threads = 10))
-# a second replicate at K = 6 and K = 10, to see the Monte Carlo error
-reps <- lapply(c(6, 10), function(K) bbmm_ss(maine, K = K, zeta = 0.3, seed = 4026 + K, n_threads = 10))
+fits <- lapply(2:20, function(K) bbmm_ss(maine, K = K, zeta = 1, seed = 2026 + K, n_threads = 12))
+# a second replicate at K = 16 and K = 18, to see the Monte Carlo error
+reps <- lapply(c(16, 18), function(K) bbmm_ss(maine, K = K, zeta = 1, seed = 4026 + K, n_threads = 12))
 ev <- evidence_from_fits(c(fits, reps))
 ev$runs        # one row per run
 ```
@@ -190,19 +195,21 @@ Reading this output:
 * `logZ` is the log marginal likelihood at each *K*, in nats (with the mean over replicates where
   there are several, and their `sd`). Differences matter, not levels: a gap of 5 nats is a factor of
   about 150 in posterior odds.
-* The evidence climbs steeply up to *K* = 5 and then goes flat: from *K* = 5 to 10 the estimates
-  lie within about 30 nats of each other, with no trend.
-* That is the size of the Monte Carlo error. The two runs at *K* = 6 agree to
-  `r sprintf("%.0f", diff(range(ev$runs$logZ[ev$runs$K == 6])))` nats, but the two at *K* = 10
-  differ by `r sprintf("%.0f", diff(range(ev$runs$logZ[ev$runs$K == 10])))`. The stepping-stone
-  estimate is noisy and biased low when particles lag behind, so one lucky run can take most of
-  $p(K \mid x)$, as *K* = 10 does here. Do not read $p(K \mid x)$ literally when the gaps are this
+* The evidence climbs steeply to about *K* = 8, keeps climbing more slowly to *K* = 16, and is flat
+  from *K* = 16 to 18 before turning down at 19 and 20. Without tempering, the data support a lot of
+  blocs: each extra bloc buys hundreds of nats up to about ten, and tens of nats after that.
+* Near the top, the differences are the size of the Monte Carlo error. The two runs at *K* = 16
+  differ by `r sprintf("%.0f", diff(range(ev$runs$logZ[ev$runs$K == 16])))` nats and the two at
+  *K* = 18 by `r sprintf("%.0f", diff(range(ev$runs$logZ[ev$runs$K == 18])))`. The stepping-stone
+  estimate is noisy and biased low when particles lag behind, so one lucky run can take nearly all of
+  $p(K \mid x)$, as *K* = 18 does here. Do not read $p(K \mid x)$ literally when the gaps are this
   small; run replicates (`n_rep` in `bbmm_evidence()`) at the competing values.
 * $p(K \mid x)$ is over mixture *components*, and components can stay empty. The robust quantity is
-  $p(T \mid x)$, the posterior on the number of *occupied* blocs, averaged over *K*. Here every run
-  with *K* $\ge$ 5 ends with five occupied blocs (at least 99.5% of particle weight) -- the extra
-  components stay empty -- so the
-  answer to "how many blocs?" at $\zeta = 0.3$ is five, whichever *K* is favoured.
+  $p(T \mid x)$, the posterior on the number of *occupied* blocs, averaged over *K*. The runs at
+  *K* = 16 to 20 all end with 15 to 17 occupied blocs, and the runs that dominate the evidence leave
+  two of their eighteen components empty, so $p(T = 16 \mid x)$ =
+  `r sprintf("%.2f", ev$posterior_T$posterior[ev$posterior_T$T == 16])`: at $\zeta = 1$ the answer
+  to "how many blocs?" is sixteen. (At $\zeta = 0.3$ it is five.)
 
 Settings live in `bbmm_control()`; the defaults are the ones used here (200 particles, conditional
 ESS 0.9, floor $\nu_k \ge 50$). `bbmm_rejuvenate()` enlarges a finished run's particle sample before
@@ -215,8 +222,8 @@ ordinary Markov chains, each started from one of the best EM fits. It is the qui
 uncertainty on one partition.
 
 ```{r mcmc-run, eval = FALSE}
-# long: about 2 minutes for 4 chains x 3,000 iterations on 4 threads
-mc <- bbmm_mcmc(maine, K = 5, zeta = 0.3, n_iter = 2000, n_burn = 1000, thin = 2,
+# long: about 3 minutes for 4 chains x 3,000 iterations on 4 threads
+mc <- bbmm_mcmc(maine, K = 16, zeta = 1, n_iter = 2000, n_burn = 1000, thin = 2,
                 n_chains = 4, seed = 2026, n_threads = 4)
 mcmc_diagnostics(mc)
 plot_trace(mc)
@@ -225,24 +232,29 @@ plot_trace(mc)
 plot_trace(res$mc)
 ```
 
-Within a chain the traces look like stationary noise, but the chains do not all agree: the
+Within a chain the traces look like stationary noise, but the chains do not agree: the
 split-$\hat R$ of the log-likelihood is `r sprintf("%.1f", res$mc_diag$rhat_ll)`, far above the
 1.01 one would want.
 
 ```{r mcmc-diag}
 round(res$mc_diag$mean_ll - max(res$mc_diag$mean_ll))   # mean log-likelihood per chain, vs the best
 round(res$mc_diag$ari, 2)                               # agreement between final partitions
+round(res$mc_ari_ss, 2)                                 # each chain's final partition vs the SS one
 ```
 
-`r ll <- res$mc_diag$mean_ll; low <- which.min(ll); sprintf("Chain %d is stuck in a different, worse partition: its log-likelihood is about %.0f below the others, and it agrees with them only moderately (adjusted Rand %.2f--%.2f). The other chains agree with each other, and with the stepping-stone sampler's partition (adjusted Rand %.2f--%.2f).", low, mean(ll[-low]) - ll[low], min(res$mc_diag$ari[low, -low]), max(res$mc_diag$ari[low, -low]), min(res$mc_ari_ss[-low]), max(res$mc_ari_ss[-low]))`
-Chain 1 is the one started from the *best* EM fit: the best partition at a single fixed $\nu$
-is not the best one once each bloc has its own $\nu_k$. Each chain explores the neighbourhood of
-the EM optimum it started from. Its allocation updates move
-one town at a time, and at a fixed $\zeta$ on data this large the split--merge moves are almost
-never accepted (`mc$acceptance` shows 0 for `split` and `merge`), so a chain that starts in a poor
-mode stays there. Use `bbmm_mcmc()` to describe uncertainty around a mode, run several chains, and
-always check `mcmc_diagnostics()`; finding the mode is the job of EM with many starts or of the
-stepping-stone sampler, whose particles move gradually from the prior.
+Each chain settles in a different partition, with mean log-likelihoods up to
+`r sprintf("%.0f", diff(range(res$mc_diag$mean_ll)))` apart, and any two chains agree only moderately
+(adjusted Rand `r sprintf("%.2f--%.2f", min(res$mc_diag$ari[upper.tri(res$mc_diag$ari)]), max(res$mc_diag$ari[upper.tri(res$mc_diag$ari)]))`).
+They agree about as well with the stepping-stone partition
+(`r sprintf("%.2f--%.2f", min(res$mc_ari_ss), max(res$mc_ari_ss))`). With sixteen blocs, many of them
+neighbours that differ on a handful of questions, the untempered posterior has many modes that differ
+in where dozens of towns go. The allocation updates move one town at a time, and on data this large
+the split--merge moves are almost never accepted (`mc$acceptance` shows 0 for `split` and `merge`),
+so each chain explores the neighbourhood of the EM optimum it started from. Use `bbmm_mcmc()` to
+describe uncertainty around a mode, run several chains, and always check `mcmc_diagnostics()`;
+finding the mode is the job of EM with many starts or of the stepping-stone sampler, whose particles
+move gradually from the prior. A smaller $\zeta$ also helps: at $\zeta = 0.3$ three of four chains
+agree.
 
 # 5. Posterior summaries and how to read them
 
@@ -273,15 +285,26 @@ for (b in s_ss$blocs$bloc) {
 }
 ```
 
-Read together with the map and the distinctive questions below, the five Maine blocs are: (1)
-Portland and its suburbs, the larger coastal towns and Bangor -- the most liberal bloc; (2) the
-service-centre cities and Portland's outer suburbs (Lewiston--Auburn, Biddeford, Sanford, Augusta,
-Brewer, Windham, Gorham), close to the state average on most questions; (3) Aroostook County and the
-Downeast towns, a loose bloc (lowest $\nu$, lowest certainty) with its own pattern on the 2009
-school-consolidation repeal, same-sex marriage and the 2024 flag question; (4) small-town and
-exurban southern and central Maine; and (5) the rural interior, most opposed to the gun-safety
-measures and most supportive of voter ID. These are descriptions for this tutorial, not
-established names.
+Read together with the map and the distinctive questions below, the sixteen blocs fall into a few
+families (bloc numbers in brackets; the descriptions are for this tutorial, not established names):
+
+* **Greater Portland and the coast** [1--3]: Portland and the college and coastal towns (1, the most
+  liberal bloc); the affluent coastal suburbs with Waterville, Bath and Belfast (2); and the
+  southern suburban cities -- Scarborough, Saco, Biddeford, Westbrook (3). All three are most
+  distinctive on the gun-safety questions.
+* **Service centres** [4, 6, 7]: Bangor, Augusta, Old Town and Farmington (4); Lewiston--Auburn,
+  Windham and Sanford (6), set apart by the Oxford County casino votes; Brewer, Ellsworth and the
+  midcoast (7).
+* **Aroostook and Washington counties** [5, 8, 12, 15]: the St. John Valley (5, Madawaska, Fort Kent,
+  Van Buren -- the most certain bloc, with its own votes on same-sex marriage and the flag);
+  central Aroostook (8, Presque Isle, Caribou, Houlton); Washington County (12, Calais and the
+  Machias area); southern Aroostook (15, Mars Hill, Patten, Island Falls). The last two voted
+  heavily to repeal school-district consolidation in 2009.
+* **Small-town southern and central Maine** [9--11, 13]: including the Oxford Hills (10, Norway,
+  Paris, Oxford, Poland -- the casino's host area, sharply against the racetrack and Lewiston
+  casino questions) and the Bangor suburbs (11).
+* **The rural interior** [14, 16]: small towns of Penobscot, Piscataquis and Somerset counties and
+  beyond, most opposed to the gun-safety measures and most supportive of voter ID.
 
 The columns of `s_ss$blocs`:
 
@@ -321,13 +344,13 @@ cbind(uncertain, round(s_ss$membership[uncertain$unit, ], 2))
 The heatmap shows each bloc's Yes share on every question (from the data, ballot-weighted). Read
 across a row to see how one question divided the blocs, and down a column for a bloc's profile.
 
-```{r profiles, fig.height = 13, fig.width = 8}
+```{r profiles, fig.height = 13, fig.width = 10}
 plot_bloc_profiles(s_ss)
 ```
 
 Showing each bloc's gap from the state as a whole makes the distinctive questions stand out:
 
-```{r gaps, fig.height = 13, fig.width = 8}
+```{r gaps, fig.height = 13, fig.width = 10}
 plot_bloc_profiles(s_ss, value = "gap")
 ```
 
@@ -400,11 +423,19 @@ c(EM_vs_SS = adjusted_rand(s_em$assignment$bloc, s_ss$assignment$bloc),
 table(SS = s_ss$assignment$bloc, MCMC = s_mc$assignment$bloc)
 ```
 
-The two Bayesian methods agree closely: the MCMC's representative partition has the same five blocs,
-with a handful of towns on the edges assigned differently. The EM fit (six blocs at a fixed $\nu$)
-agrees less, for two reasons the cross-tabulation shows (`table(s_ss$assignment$bloc,
-s_em$assignment$bloc)`): it splits the stepping-stone sampler's bloc 1 into two, and it divides the
-northern and Downeast towns of bloc 3 between a bloc of their own and the small-town bloc.
+The MCMC representative partition agrees only moderately with the stepping-stone one -- not
+surprising given the mixing problems above. EM and the stepping-stone sampler agree even less by the
+adjusted Rand index, but for a different reason, which the cross-tabulation shows:
+
+```{r compare-em}
+table(SS = s_ss$assignment$bloc, EM = s_em$assignment$bloc)
+```
+
+Most of the sixteen stepping-stone blocs sit largely inside one of EM's six -- nine of them have 90%
+or more of their towns in a single EM bloc -- and the rest straddle two neighbouring EM blocs (SS 14,
+for example, splits between EM 5 and 6). EM bloc 1 is SS 1 plus part of SS 2; EM bloc 6 is SS 16
+plus most of SS 14 and 15. Largely, the two are views of the same structure at different grains. The adjusted Rand index penalises the difference in grain as heavily
+as genuine disagreement, so read the cross-tabulation, not only the index.
 
 # 6. Where to go next
 

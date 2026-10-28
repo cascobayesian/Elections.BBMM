@@ -28,7 +28,7 @@ data that ship with the package – Maine’s 72 statewide referendums of
 the slow but fully Bayesian stepping-stone sampler. It then walks
 through the posterior summaries and how to read them.
 
-Code chunks marked **long** were run once on an Apple M4 Pro laptop (10
+Code chunks marked **long** were run once on an Apple M4 Pro laptop (12
 threads); their results are loaded from the package so that this
 document builds quickly. Running them yourself gives the same numbers
 (the seeds are set), on the time scales quoted.
@@ -117,9 +117,12 @@ growing with the data. All three fitting methods therefore raise the
 likelihood to a power $\zeta \le 1$ (the coarsened posterior of Miller
 and Dunson, 2019): roughly, they look for structure that would survive
 if the data were a fraction $\zeta$ of their size. Smaller $\zeta$ gives
-fewer, broader blocs. This tutorial uses $\zeta = 0.3$ throughout. Treat
-$\zeta$ as a choice about the grain of the analysis, and check that the
-conclusions you care about hold at neighbouring values.
+fewer, broader blocs. This tutorial uses the untempered model,
+$\zeta = 1$, throughout, so you can see what the full likelihood does
+with data this large; the same analysis at $\zeta = 0.3$ finds five
+blocs instead of sixteen. Treat $\zeta$ as a choice about the grain of
+the analysis, and check that the conclusions you care about hold at
+neighbouring values.
 
 # 3. Fast: tempered EM
 
@@ -128,30 +131,34 @@ conclusions you care about hold at neighbouring values.
 concentration fixed at $\nu = 100$ for every bloc.
 
 ``` r
-# long: about 1 minute on 10 cores, 4 minutes on 4
-sel <- bbmm_em_select(maine, K = 1:12, zeta = 0.3, n_starts = 10, seed = 2026, cores = 10)
+# long: about 1 minute on 12 cores, 4 minutes on 4
+sel <- bbmm_em_select(maine, K = 1:16, zeta = 1, n_starts = 10, seed = 2026, cores = 12)
 ```
 
 ``` r
 sel
-#> BBMM tempered EM over K = 1-12 (zeta = 0.3, nu = 100; 462 units x 72 questions)
-#>   K   loglik occupied min_share      BIC converged n_at_best
-#>   1 -54191.1        1 1.0000000 109131.9      TRUE        10
-#>   2 -49232.5        2 0.3160173  99974.9      TRUE        10
-#>   3 -47855.5        3 0.1623377  97980.9      TRUE        10
-#>   4 -47380.2        4 0.1385281  97790.4      TRUE         8
-#>   5 -47138.2        5 0.0844156  98066.4      TRUE         4
-#>   6 -46898.8        6 0.0584416  98347.8      TRUE         4
-#>   7 -46734.6        7 0.0346320  98779.5      TRUE         3
-#>   8 -46644.7        8 0.0346320  99359.7      TRUE         1
-#>   9 -46606.8        9 0.0346320 100044.1      TRUE         1
-#>  10 -46581.8       10 0.0173160 100754.0      TRUE         1
-#>  11 -46522.2       11 0.0151515 101395.0      TRUE         1
-#>  12 -46496.6       11 0.0194805 101343.8      TRUE         1
+#> BBMM tempered EM over K = 1-16 (zeta = 1, nu = 100; 462 units x 72 questions)
+#>   K  loglik occupied min_share    BIC converged n_at_best
+#>   1 -180637        1 1.0000000 362023      TRUE        10
+#>   2 -163445        2 0.3225108 328400      TRUE        10
+#>   3 -158441        3 0.1601732 319152      TRUE        10
+#>   4 -156536        4 0.1385281 316102      TRUE         9
+#>   5 -155502        5 0.1212121 314795      TRUE         4
+#>   6 -154571        6 0.0844156 313693      TRUE         2
+#>   7 -153845        7 0.0454545 313001      TRUE         1
+#>   8 -153406        8 0.0411255 312881      TRUE         1
+#>   9 -153086        9 0.0411255 313003      TRUE         1
+#>  10 -152890       10 0.0238095 313370      TRUE         1
+#>  11 -152547       11 0.0324675 313444      TRUE         1
+#>  12 -152421       12 0.0108225 313953      TRUE         1
+#>  13 -152029       13 0.0259740 313928      TRUE         1
+#>  14 -151778       14 0.0238095 314186      TRUE         1
+#>  15 -151611       15 0.0173160 314614      TRUE         1
+#>  16 -151629       15 0.0259740 314648      TRUE         1
 #> 
 #> Selected number of blocs:
 #>          BIC min_share_3% min_share_5% 
-#>            4            9            6
+#>            8           11            6
 ```
 
 Each row is the best of the 10 starts at that *K*: its tempered
@@ -173,11 +180,14 @@ plot_em_selection(sel)
 
 <img src="TUTORIAL_files/figure-gfm/em-plot-1.png" alt="" width="100%" />
 
-On Maine the rules disagree: BIC picks 4 blocs, the 5% rule 6 and the 3%
-rule 9. From *K* = 5 on, fewer than half of the starts reach the best
-fit, and beyond *K* = 7 only one does: the extra blocs are not well
-determined. We carry the 5% fit forward; the stepping-stone sampler in
-the next section addresses the number of blocs directly.
+On Maine the rules disagree: BIC picks 8 blocs, the 5% rule 6 and the 3%
+rule 11. The log-likelihood keeps rising all the way to *K* = 16 – the
+untempered likelihood always finds something to gain from another bloc –
+and from *K* = 5 on fewer than half of the starts reach the best fit;
+from *K* = 7 on only one does, so the extra blocs are not well
+determined. We carry the 5% fit forward as a coarse summary; the
+stepping-stone sampler in the next section addresses the number of blocs
+directly.
 
 Pick a fit and summarise it:
 
@@ -186,14 +196,14 @@ K_em <- sel$selected[["min_share_5%"]]
 fit_em <- sel$fits[[as.character(K_em)]]
 s_em <- bloc_summary(fit_em, maine)
 s_em
-#> Bloc summary: tempered EM, K = 6 (6 occupied), zeta = 0.3, fixed nu = 100 
+#> Bloc summary: tempered EM, K = 6 (6 occupied), zeta = 1, fixed nu = 100 
 #>  bloc units share    ballots mean_yes  nu certainty
-#>     1    39 0.084  8,270,147    0.636 100     0.994
-#>     2    62 0.134  8,303,343    0.583 100     0.975
-#>     3    99 0.214 10,598,773    0.546 100     0.952
-#>     4    27 0.058  1,217,226    0.546 100     0.988
-#>     5   144 0.312  7,165,762    0.507 100     0.937
-#>     6    91 0.197  1,724,711    0.461 100     0.965
+#>     1    39 0.084  8,270,147    0.636 100     0.999
+#>     2    62 0.134  8,303,343    0.583 100     0.998
+#>     3    97 0.210 10,538,699    0.546 100     0.995
+#>     4    40 0.087  1,589,005    0.540 100     0.997
+#>     5   131 0.284  6,840,626    0.507 100     0.988
+#>     6    93 0.201  1,738,142    0.461 100     0.992
 ```
 
 ``` r
@@ -202,7 +212,7 @@ plot_bloc_map(s_em, maine_towns())
 
 <img src="TUTORIAL_files/figure-gfm/em-map-1.png" alt="" width="100%" />
 
-To fit a single *K*, use `bbmm_em(maine, K = 6, zeta = 0.3)`. EM also
+To fit a single *K*, use `bbmm_em(maine, K = 6, zeta = 1)`. EM also
 returns each town’s membership probabilities (`fit_em$gamma`); at this
 $\zeta$ almost all are close to 0 or 1, which says more about the
 fixed-$\nu$ model than about how certain the partition is.
@@ -222,41 +232,54 @@ The sampler moves a population of 200 “particles” from the prior to the
 tempered posterior through a few hundred intermediate distributions, so
 it is far slower than EM.
 
-> **How long will this take?** On Maine (462 towns x 72 questions), one
-> *K* took between 4 minutes and 10 minutes on 10 threads, and *K* = 2
-> to 10 took 69 minutes in all. Time grows with units x questions and
-> with *K*: a state’s precincts (thousands of units) can take hours to
-> days per *K*. Start with a small range of *K* around the EM answer,
-> use as many threads as you can spare (`n_threads`), and for big data
-> run each *K* as a separate job and combine them with
-> `evidence_from_fits()`.
+> **How long will this take?** On Maine (462 towns x 72 questions) at
+> $\zeta = 1$, one *K* took from about 4 minutes (*K* = 2) to about 17
+> minutes (*K* = 16) on 12 threads of an otherwise idle machine, and *K*
+> = 2 to 20 took about four hours in all, plus an hour for two
+> replicates. Time grows with units x questions, with *K*, and with
+> $\zeta$ (a larger $\zeta$ means a longer path from prior to
+> posterior). A state’s precincts (thousands of units) can take hours to
+> days per *K*. Start with a range of *K* around the EM answer, extend
+> it until the evidence turns down, use as many threads as you can spare
+> (`n_threads`), and for big data run each *K* as a separate job and
+> combine them with `evidence_from_fits()`.
 
 ``` r
-# long: about 70 minutes on 10 threads (plus two extra replicates, 20 minutes)
-ev <- bbmm_evidence(maine, K = 2:10, zeta = 0.3, n_threads = 10, seed = 2026)
+# long: about 4 hours on 12 threads (plus two extra replicates, 1 hour)
+ev <- bbmm_evidence(maine, K = 2:20, zeta = 1, n_threads = 12, seed = 2026)
 
 # or, one K at a time (e.g. as separate jobs), then combine:
-fits <- lapply(2:10, function(K) bbmm_ss(maine, K = K, zeta = 0.3, seed = 2026 + K, n_threads = 10))
-# a second replicate at K = 6 and K = 10, to see the Monte Carlo error
-reps <- lapply(c(6, 10), function(K) bbmm_ss(maine, K = K, zeta = 0.3, seed = 4026 + K, n_threads = 10))
+fits <- lapply(2:20, function(K) bbmm_ss(maine, K = K, zeta = 1, seed = 2026 + K, n_threads = 12))
+# a second replicate at K = 16 and K = 18, to see the Monte Carlo error
+reps <- lapply(c(16, 18), function(K) bbmm_ss(maine, K = K, zeta = 1, seed = 4026 + K, n_threads = 12))
 ev <- evidence_from_fits(c(fits, reps))
 ev$runs        # one row per run
 ```
 
 ``` r
 ev
-#> BBMM stepping-stone evidence, zeta = 0.3: 11 run(s)
-#>   K     logZ    sd posterior
-#>   2 -7185687    NA  0.00e+00
-#>   3 -7185001    NA  7.57e-79
-#>   4 -7184880    NA  2.06e-26
-#>   5 -7184824    NA  2.24e-02
-#>   6 -7184822  2.10  2.23e-01
-#>   7 -7184835    NA  3.66e-07
-#>   8 -7184835    NA  6.29e-07
-#>   9 -7184826    NA  2.38e-03
-#>  10 -7184820 20.54  7.52e-01
-#> Posterior on occupied blocs T: 5: 1.00
+#> BBMM stepping-stone evidence, zeta = 1: 21 run(s)
+#>   K      logZ    sd posterior
+#>   2 -23950454    NA  0.00e+00
+#>   3 -23947026    NA  0.00e+00
+#>   4 -23945584    NA  0.00e+00
+#>   5 -23944609    NA  0.00e+00
+#>   6 -23944131    NA  0.00e+00
+#>   7 -23943566    NA  0.00e+00
+#>   8 -23943358    NA  0.00e+00
+#>   9 -23943116    NA 6.78e-278
+#>  10 -23942951    NA 4.68e-206
+#>  11 -23942790    NA 1.72e-136
+#>  12 -23942738    NA 5.99e-114
+#>  13 -23942632    NA  5.47e-68
+#>  14 -23942609    NA  5.35e-58
+#>  15 -23942583    NA  9.04e-47
+#>  16 -23942510 14.75  7.10e-15
+#>  17 -23942500    NA  1.80e-10
+#>  18 -23942477 36.39  1.00e+00
+#>  19 -23942515    NA  4.37e-17
+#>  20 -23942577    NA  2.78e-44
+#> Posterior on occupied blocs T: 16: 0.97, 17: 0.03
 ```
 
 ``` r
@@ -271,22 +294,25 @@ Reading this output:
   mean over replicates where there are several, and their `sd`).
   Differences matter, not levels: a gap of 5 nats is a factor of about
   150 in posterior odds.
-- The evidence climbs steeply up to *K* = 5 and then goes flat: from *K*
-  = 5 to 10 the estimates lie within about 30 nats of each other, with
-  no trend.
-- That is the size of the Monte Carlo error. The two runs at *K* = 6
-  agree to 3 nats, but the two at *K* = 10 differ by 29. The
-  stepping-stone estimate is noisy and biased low when particles lag
-  behind, so one lucky run can take most of $p(K \mid x)$, as *K* = 10
-  does here. Do not read $p(K \mid x)$ literally when the gaps are this
-  small; run replicates (`n_rep` in `bbmm_evidence()`) at the competing
-  values.
+- The evidence climbs steeply to about *K* = 8, keeps climbing more
+  slowly to *K* = 16, and is flat from *K* = 16 to 18 before turning
+  down at 19 and 20. Without tempering, the data support a lot of blocs:
+  each extra bloc buys hundreds of nats up to about ten, and tens of
+  nats after that.
+- Near the top, the differences are the size of the Monte Carlo error.
+  The two runs at *K* = 16 differ by 21 nats and the two at *K* = 18
+  by 51. The stepping-stone estimate is noisy and biased low when
+  particles lag behind, so one lucky run can take nearly all of
+  $p(K \mid x)$, as *K* = 18 does here. Do not read $p(K \mid x)$
+  literally when the gaps are this small; run replicates (`n_rep` in
+  `bbmm_evidence()`) at the competing values.
 - $p(K \mid x)$ is over mixture *components*, and components can stay
   empty. The robust quantity is $p(T \mid x)$, the posterior on the
-  number of *occupied* blocs, averaged over *K*. Here every run with *K*
-  $\ge$ 5 ends with five occupied blocs (at least 99.5% of particle
-  weight) – the extra components stay empty – so the answer to “how many
-  blocs?” at $\zeta = 0.3$ is five, whichever *K* is favoured.
+  number of *occupied* blocs, averaged over *K*. The runs at *K* = 16 to
+  20 all end with 15 to 17 occupied blocs, and the runs that dominate
+  the evidence leave two of their eighteen components empty, so
+  $p(T = 16 \mid x)$ = 0.97: at $\zeta = 1$ the answer to “how many
+  blocs?” is sixteen. (At $\zeta = 0.3$ it is five.)
 
 Settings live in `bbmm_control()`; the defaults are the ones used here
 (200 particles, conditional ESS 0.9, floor $\nu_k \ge 50$).
@@ -301,8 +327,8 @@ of the best EM fits. It is the quickest way to put uncertainty on one
 partition.
 
 ``` r
-# long: about 2 minutes for 4 chains x 3,000 iterations on 4 threads
-mc <- bbmm_mcmc(maine, K = 5, zeta = 0.3, n_iter = 2000, n_burn = 1000, thin = 2,
+# long: about 3 minutes for 4 chains x 3,000 iterations on 4 threads
+mc <- bbmm_mcmc(maine, K = 16, zeta = 1, n_iter = 2000, n_burn = 1000, thin = 2,
                 n_chains = 4, seed = 2026, n_threads = 4)
 mcmc_diagnostics(mc)
 plot_trace(mc)
@@ -311,36 +337,38 @@ plot_trace(mc)
 <img src="TUTORIAL_files/figure-gfm/mcmc-plot-1.png" alt="" width="100%" />
 
 Within a chain the traces look like stationary noise, but the chains do
-not all agree: the split-$\hat R$ of the log-likelihood is 3.1, far
-above the 1.01 one would want.
+not agree: the split-$\hat R$ of the log-likelihood is 2.6, far above
+the 1.01 one would want.
 
 ``` r
 round(res$mc_diag$mean_ll - max(res$mc_diag$mean_ll))   # mean log-likelihood per chain, vs the best
 #>    1    2    3    4 
-#> -341   -2   -5    0
+#>  -49 -150    0 -114
 round(res$mc_diag$ari, 2)                               # agreement between final partitions
 #>         chain_1 chain_2 chain_3 chain_4
-#> chain_1    1.00    0.51    0.50    0.48
-#> chain_2    0.51    1.00    0.87    0.85
-#> chain_3    0.50    0.87    1.00    0.88
-#> chain_4    0.48    0.85    0.88    1.00
+#> chain_1    1.00    0.56    0.57    0.53
+#> chain_2    0.56    1.00    0.52    0.61
+#> chain_3    0.57    0.52    1.00    0.60
+#> chain_4    0.53    0.61    0.60    1.00
+round(res$mc_ari_ss, 2)                                 # each chain's final partition vs the SS one
+#>    1    2    3    4 
+#> 0.65 0.67 0.63 0.61
 ```
 
-Chain 1 is stuck in a different, worse partition: its log-likelihood is
-about 339 below the others, and it agrees with them only moderately
-(adjusted Rand 0.48–0.51). The other chains agree with each other, and
-with the stepping-stone sampler’s partition (adjusted Rand 0.87–0.90).
-Chain 1 is the one started from the *best* EM fit: the best partition at
-a single fixed $\nu$ is not the best one once each bloc has its own
-$\nu_k$. Each chain explores the neighbourhood of the EM optimum it
-started from. Its allocation updates move one town at a time, and at a
-fixed $\zeta$ on data this large the split–merge moves are almost never
-accepted (`mc$acceptance` shows 0 for `split` and `merge`), so a chain
-that starts in a poor mode stays there. Use `bbmm_mcmc()` to describe
-uncertainty around a mode, run several chains, and always check
-`mcmc_diagnostics()`; finding the mode is the job of EM with many starts
-or of the stepping-stone sampler, whose particles move gradually from
-the prior.
+Each chain settles in a different partition, with mean log-likelihoods
+up to 150 apart, and any two chains agree only moderately (adjusted Rand
+0.52–0.61). They agree about as well with the stepping-stone partition
+(0.61–0.67). With sixteen blocs, many of them neighbours that differ on
+a handful of questions, the untempered posterior has many modes that
+differ in where dozens of towns go. The allocation updates move one town
+at a time, and on data this large the split–merge moves are almost never
+accepted (`mc$acceptance` shows 0 for `split` and `merge`), so each
+chain explores the neighbourhood of the EM optimum it started from. Use
+`bbmm_mcmc()` to describe uncertainty around a mode, run several chains,
+and always check `mcmc_diagnostics()`; finding the mode is the job of EM
+with many starts or of the stepping-stone sampler, whose particles move
+gradually from the prior. A smaller $\zeta$ also helps: at $\zeta = 0.3$
+three of four chains agree.
 
 # 5. Posterior summaries and how to read them
 
@@ -357,14 +385,25 @@ s_ss <- bloc_summary(ev, maine)   # pools the runs at every K, weighted by p(K |
 
 ``` r
 s_ss
-#> Bloc summary: stepping-stone SMC pooled over K = 2,3,4,5,6,7,8,9,10 by p(K | x), zeta = 0.3 
-#>  bloc units share    ballots mean_yes  nu certainty
-#>     1    73 0.158 13,545,102    0.618  71     0.957
-#>     2   103 0.223 11,842,553    0.555 123     0.967
-#>     3    55 0.119  1,721,253    0.539  65     0.791
-#>     4   124 0.268  7,753,610    0.514 129     0.897
-#>     5   107 0.232  2,417,444    0.468 110     0.891
-#> Posterior on the number of occupied blocs: 5: 1.00
+#> Bloc summary: stepping-stone SMC pooled over K = 2-20 by p(K | x), zeta = 1 
+#>  bloc units share   ballots mean_yes  nu certainty
+#>     1    23 0.050 5,711,160    0.648  98     0.814
+#>     2    33 0.071 4,069,547    0.605 127     0.906
+#>     3    10 0.022 3,709,343    0.586 192     0.860
+#>     4    36 0.078 3,034,031    0.575 146     0.904
+#>     5    15 0.032   444,928    0.570 166     1.000
+#>     6    44 0.095 6,481,813    0.553 193     0.979
+#>     7    31 0.067 2,268,336    0.537 218     0.900
+#>     8    19 0.041   851,197    0.527 223     0.884
+#>     9    47 0.102 3,103,754    0.523 207     0.961
+#>    10    12 0.026 1,075,121    0.519 199     0.999
+#>    11    36 0.078 2,048,313    0.511 189     0.858
+#>    12    25 0.054   484,801    0.510 121     0.969
+#>    13    26 0.056 1,695,563    0.500 224     0.977
+#>    14    35 0.076 1,272,453    0.476 286     0.929
+#>    15    22 0.048   299,626    0.476 165     0.929
+#>    16    48 0.104   729,976    0.448 122     0.939
+#> Posterior on the number of occupied blocs: 16: 0.97, 17: 0.03
 ```
 
 To see what a bloc is, start with its largest towns:
@@ -377,24 +416,51 @@ for (b in s_ss$blocs$bloc) {
   top <- head(members[order(-votes[members])], 8)
   cat(b, ": ", paste(maine$unit_info$name[match(top, maine$units)], collapse = ", "), "\n", sep = "")
 }
-#> 1: Portland, South Portland, Bangor, Scarborough, Brunswick, Saco, Westbrook, York
-#> 2: Lewiston, Auburn, Biddeford, Windham, Gorham, Sanford, Augusta, Standish
-#> 3: Presque Isle, Caribou, Houlton, Madawaska, Fort Kent, Fort Fairfield, Calais, East Millinocket
-#> 4: Lisbon, Skowhegan, Waterboro, New Gloucester, Poland, Fairfield, Turner, Lebanon
-#> 5: Hermon, Lincoln, Mattawamkeag + Medway + Sherman + Stacyville, Carmel, Levant, Corinth, Eddington, Albion
+#> 1: Portland, South Portland, Brunswick, York, Cape Elizabeth, Yarmouth, Kittery, Orono
+#> 2: Falmouth, Kennebunk, Waterville, Freeport, Cumberland, Bath, Belfast, Eliot
+#> 3: Scarborough, Saco, Biddeford, Gorham, Westbrook, Wells, Topsham, Old Orchard Beach
+#> 4: Bangor, Augusta, Alton + Edinburg + Old Town + Penobscot Nation Voting District, Farmington, Boothbay, Bowdoinham, Readfield, Bethel
+#> 5: Madawaska, Fort Kent, Van Buren, Limestone, Eagle Lake + Winterville Plantation, Frenchville, Saint Agatha, Stockholm
+#> 6: Lewiston, Auburn, Windham, Sanford, Standish, Gray, Buxton, Winslow
+#> 7: Brewer, Hampden, Ellsworth, Waldoboro, Bucksport, Woolwich, Gouldsboro + Steuben, Union
+#> 8: Presque Isle, Caribou, Houlton, Fort Fairfield, Mapleton, Washburn, Easton, Woodland
+#> 9: Lisbon, Skowhegan, Waterboro, Fairfield, Lebanon, Durham, Jay, Weld + Wilton
+#> 10: New Gloucester, Poland, Norway, Paris, Oxford, Mechanic Falls, Harrison, Otisfield
+#> 11: Hermon, Millinocket, Glenburn, Orrington, Dover-Foxcroft, Winterport, Cherryfield + Franklin + Milbridge, Holden
+#> 12: Calais, Cooper + East Machias, Baileyville, Addison, Jonesport, Machiasport, Perry, Princeton
+#> 13: Turner, Sidney, Sabattus, Greene, West Gardiner, Litchfield, Bowdoin, Pittston
+#> 14: Lincoln, Carmel, Levant, Eddington, Albion, Saint Albans, Corinna, Palmyra
+#> 15: Mars Hill, Patten, Littleton, Island Falls, Linneus, Blaine, Monticello, Danforth
+#> 16: Mattawamkeag + Medway + Sherman + Stacyville, Corinth, Wales, Cary Plantation + Hodgdon, Charleston, Greenbush, Atkinson + Sebec, Jackman
 ```
 
-Read together with the map and the distinctive questions below, the five
-Maine blocs are: (1) Portland and its suburbs, the larger coastal towns
-and Bangor – the most liberal bloc; (2) the service-centre cities and
-Portland’s outer suburbs (Lewiston–Auburn, Biddeford, Sanford, Augusta,
-Brewer, Windham, Gorham), close to the state average on most questions;
-(3) Aroostook County and the Downeast towns, a loose bloc (lowest $\nu$,
-lowest certainty) with its own pattern on the 2009 school-consolidation
-repeal, same-sex marriage and the 2024 flag question; (4) small-town and
-exurban southern and central Maine; and (5) the rural interior, most
-opposed to the gun-safety measures and most supportive of voter ID.
-These are descriptions for this tutorial, not established names.
+Read together with the map and the distinctive questions below, the
+sixteen blocs fall into a few families (bloc numbers in brackets; the
+descriptions are for this tutorial, not established names):
+
+- **Greater Portland and the coast** \[1–3\]: Portland and the college
+  and coastal towns (1, the most liberal bloc); the affluent coastal
+  suburbs with Waterville, Bath and Belfast (2); and the southern
+  suburban cities – Scarborough, Saco, Biddeford, Westbrook (3). All
+  three are most distinctive on the gun-safety questions.
+- **Service centres** \[4, 6, 7\]: Bangor, Augusta, Old Town and
+  Farmington (4); Lewiston–Auburn, Windham and Sanford (6), set apart by
+  the Oxford County casino votes; Brewer, Ellsworth and the midcoast
+  (7).
+- **Aroostook and Washington counties** \[5, 8, 12, 15\]: the St. John
+  Valley (5, Madawaska, Fort Kent, Van Buren – the most certain bloc,
+  with its own votes on same-sex marriage and the flag); central
+  Aroostook (8, Presque Isle, Caribou, Houlton); Washington County (12,
+  Calais and the Machias area); southern Aroostook (15, Mars Hill,
+  Patten, Island Falls). The last two voted heavily to repeal
+  school-district consolidation in 2009.
+- **Small-town southern and central Maine** \[9–11, 13\]: including the
+  Oxford Hills (10, Norway, Paris, Oxford, Poland – the casino’s host
+  area, sharply against the racetrack and Lewiston casino questions) and
+  the Bangor suburbs (11).
+- **The rural interior** \[14, 16\]: small towns of Penobscot,
+  Piscataquis and Somerset counties and beyond, most opposed to the
+  gun-safety measures and most supportive of voter ID.
 
 The columns of `s_ss$blocs`:
 
@@ -435,18 +501,24 @@ town you can see which bloc it is torn between:
 a <- s_ss$assignment
 uncertain <- head(a[order(a$certainty), ], 5)
 cbind(uncertain, round(s_ss$membership[uncertain$unit, ], 2))
-#>                            unit bloc certainty bloc_1 bloc_2 bloc_3 bloc_4
-#> 254                  MARSHFIELD    5 0.1913830   0.00   0.00   0.71   0.11
-#> 366          SEBOEIS_PLANTATION    3 0.2767565   0.00   0.24   0.28   0.51
-#> 255 MASARDIS + OXBOW_PLANTATION    4 0.3258948   0.00   0.00   0.68   0.33
-#> 206                     JACKSON    4 0.3549818   0.01   0.63   0.05   0.35
-#> 202                ISLAND_FALLS    5 0.3558478   0.00   0.00   0.48   0.21
-#>     bloc_5
-#> 254   0.19
-#> 366   0.03
-#> 255   0.03
-#> 206   0.01
-#> 202   0.36
+#>                          unit bloc certainty bloc_1 bloc_2 bloc_3 bloc_4 bloc_5
+#> 329 PLEASANT_RIDGE_PLANTATION    8 0.2253447   0.00   0.00   0.00   0.00      0
+#> 179                   HAMMOND   14 0.2617102   0.00   0.00   0.00   0.00      0
+#> 96                    CLINTON   11 0.2726409   0.00   0.00   0.00   0.00      0
+#> 286                NEW_SWEDEN    7 0.2813770   0.00   0.00   0.00   0.00      0
+#> 297            NORTH_YARMOUTH    3 0.3189948   0.02   0.34   0.32   0.38      0
+#>     bloc_6 bloc_7 bloc_8 bloc_9 bloc_10 bloc_11 bloc_12 bloc_13 bloc_14 bloc_15
+#> 329      0   0.00   0.23   0.55       0    0.21    0.01    0.01    0.00    0.01
+#> 179      0   0.00   0.00   0.00       0    0.00    0.00    0.00    0.26    0.71
+#> 96       0   0.00   0.03   0.39       0    0.27    0.00    0.33    0.00    0.00
+#> 286      0   0.28   0.67   0.00       0    0.01    0.00    0.00    0.00    0.00
+#> 297      0   0.00   0.00   0.00       0    0.00    0.00    0.00    0.00    0.00
+#>     bloc_16
+#> 329    0.00
+#> 179    0.01
+#> 96     0.00
+#> 286    0.00
+#> 297    0.00
 ```
 
 ## What the blocs vote for
@@ -478,34 +550,100 @@ distinctive_questions(s_ss, n = 3)
 #> 1     1 REFERENDUM_2016_3                2016 Q3: Firearm background checks
 #> 2     1 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
 #> 3     1 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
-#> 4     2 REFERENDUM_2008_2                     2008 Q2: Oxford County casino
-#> 5     2 REFERENDUM_2009_3     2009 Q3: School district consolidation repeal
-#> 6     2 REFERENDUM_2015_1                  2015 Q1: Campaign finance reform
-#> 7     3 REFERENDUM_2009_3     2009 Q3: School district consolidation repeal
-#> 8     3 REFERENDUM_2009_1                 2009 Q1: Same-sex marriage repeal
-#> 9     3 REFERENDUM_2024_5                   2024 Q5: State flag replacement
-#> 10    4 REFERENDUM_2016_3                2016 Q3: Firearm background checks
-#> 11    4 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
-#> 12    4 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
-#> 13    5 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
-#> 14    5 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
-#> 15    5 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 4     2 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 5     2 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 6     2 REFERENDUM_2024_5                   2024 Q5: State flag replacement
+#> 7     3 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 8     3 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 9     3 REFERENDUM_2009_3     2009 Q3: School district consolidation repeal
+#> 10    4 REFERENDUM_2010_1                     2010 Q1: Oxford County casino
+#> 11    4 REFERENDUM_2011_2                  2011 Q2: Racetrack slot machines
+#> 12    4 REFERENDUM_2015_3                      2015 Q3: Transportation bond
+#> 13    5 REFERENDUM_2009_1                 2009 Q1: Same-sex marriage repeal
+#> 14    5 REFERENDUM_2024_5                   2024 Q5: State flag replacement
+#> 15    5 REFERENDUM_2012_1                        2012 Q1: Same-sex marriage
+#> 16    6 REFERENDUM_2008_2                     2008 Q2: Oxford County casino
+#> 17    6 REFERENDUM_2010_1                     2010 Q1: Oxford County casino
+#> 18    6 REFERENDUM_2011_3                          2011 Q3: Lewiston casino
+#> 19    7 REFERENDUM_2008_2                     2008 Q2: Oxford County casino
+#> 20    7 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 21    7 REFERENDUM_2010_1                     2010 Q1: Oxford County casino
+#> 22    8 REFERENDUM_2009_1                 2009 Q1: Same-sex marriage repeal
+#> 23    8 REFERENDUM_2024_5                   2024 Q5: State flag replacement
+#> 24    8 REFERENDUM_2012_1                        2012 Q1: Same-sex marriage
+#> 25    9 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 26    9 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 27    9 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 28   10 REFERENDUM_2011_2                  2011 Q2: Racetrack slot machines
+#> 29   10 REFERENDUM_2011_3                          2011 Q3: Lewiston casino
+#> 30   10 REFERENDUM_2008_2                     2008 Q2: Oxford County casino
+#> 31   11 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 32   11 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 33   11 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 34   12 REFERENDUM_2009_3     2009 Q3: School district consolidation repeal
+#> 35   12 REFERENDUM_2010_1                     2010 Q1: Oxford County casino
+#> 36   12 REFERENDUM_2008_2                     2008 Q2: Oxford County casino
+#> 37   13 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 38   13 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 39   13 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 40   14 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 41   14 REFERENDUM_2016_3                2016 Q3: Firearm background checks
+#> 42   14 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 43   15 REFERENDUM_2009_3     2009 Q3: School district consolidation repeal
+#> 44   15 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 45   15 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 46   16 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 47   16 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 48   16 REFERENDUM_2016_3                2016 Q3: Firearm background checks
 #>    yes_share all_share         gap
-#> 1  0.6628805 0.4803974  0.18248306
-#> 2  0.7844767 0.6277386  0.15673809
-#> 3  0.2130119 0.3594147 -0.14640288
-#> 4  0.5011414 0.4618037  0.03933773
-#> 5  0.3877802 0.4167205 -0.02894021
-#> 6  0.5207088 0.5493046 -0.02859586
-#> 7  0.5838678 0.4167205  0.16714732
-#> 8  0.6952089 0.5289603  0.16624862
-#> 9  0.2770463 0.4412227 -0.16417639
-#> 10 0.3179944 0.4803974 -0.16240304
-#> 11 0.4749128 0.6277386 -0.15282583
-#> 12 0.4981296 0.3594147  0.13871485
-#> 13 0.3595160 0.6277386 -0.26822259
-#> 14 0.6112446 0.3594147  0.25182987
-#> 15 0.2295247 0.4803974 -0.25087275
+#> 1  0.7430548 0.4803974  0.26265733
+#> 2  0.8423558 0.6277386  0.21461723
+#> 3  0.1525831 0.3594147 -0.20683168
+#> 4  0.6150749 0.4803974  0.13467748
+#> 5  0.7518238 0.6277386  0.12408520
+#> 6  0.5592854 0.4412227  0.11806265
+#> 7  0.6128318 0.4803974  0.13243435
+#> 8  0.7458267 0.6277386  0.11808809
+#> 9  0.3089472 0.4167205 -0.10777324
+#> 10 0.4555931 0.5044110 -0.04881785
+#> 11 0.4031508 0.4503344 -0.04718365
+#> 12 0.7726032 0.7273352  0.04526801
+#> 13 0.7181237 0.5289603  0.18916335
+#> 14 0.2544742 0.4412227 -0.18674849
+#> 15 0.3438608 0.5260023 -0.18214155
+#> 16 0.5509809 0.4618037  0.08917727
+#> 17 0.5714054 0.5044110  0.06699445
+#> 18 0.4293910 0.3654093  0.06398165
+#> 19 0.3754697 0.4618037 -0.08633395
+#> 20 0.3971874 0.4803974 -0.08321000
+#> 21 0.4258294 0.5044110 -0.07858159
+#> 22 0.7121462 0.5289603  0.18318587
+#> 23 0.2649731 0.4412227 -0.17624963
+#> 24 0.3541294 0.5260023 -0.17187294
+#> 25 0.3241545 0.4803974 -0.15624297
+#> 26 0.4853734 0.6277386 -0.14236516
+#> 27 0.4765685 0.3594147  0.11715381
+#> 28 0.2683579 0.4503344 -0.18197651
+#> 29 0.1876873 0.3654093 -0.17772202
+#> 30 0.6088978 0.4618037  0.14709412
+#> 31 0.3197266 0.4803974 -0.16067083
+#> 32 0.4719458 0.6277386 -0.15579283
+#> 33 0.5032830 0.3594147  0.14386831
+#> 34 0.6531267 0.4167205  0.23640622
+#> 35 0.2777632 0.5044110 -0.22664778
+#> 36 0.2353894 0.4618037 -0.22641421
+#> 37 0.4420792 0.6277386 -0.18565940
+#> 38 0.2964694 0.4803974 -0.18392798
+#> 39 0.5412753 0.3594147  0.18186060
+#> 40 0.3816254 0.6277386 -0.24611316
+#> 41 0.2374016 0.4803974 -0.24299579
+#> 42 0.5872312 0.3594147  0.22781642
+#> 43 0.7201990 0.4167205  0.30347855
+#> 44 0.6253019 0.3594147  0.26588720
+#> 45 0.3640483 0.6277386 -0.26369027
+#> 46 0.3061540 0.6277386 -0.32158459
+#> 47 0.6508041 0.3594147  0.29138941
+#> 48 0.2008245 0.4803974 -0.27957292
 ```
 
 The bloc-level parameters from the model, with 90% intervals, are in
@@ -516,19 +654,19 @@ not well described by a single profile.
 ``` r
 head(s_ss$questions[, c("bloc", "label", "yes_share", "p_mean", "p_lo", "p_hi")])
 #>   bloc                                         label yes_share    p_mean
-#> 1    1         2008 Q1: Dirigo Health funding repeal 0.5882996 0.5750990
-#> 2    1                 2008 Q2: Oxford County casino 0.4119079 0.3719210
-#> 3    1            2008 Q3: Water infrastructure bond 0.5830431 0.5571444
-#> 4    1             2009 Q1: Same-sex marriage repeal 0.3923632 0.4086399
-#> 5    1               2009 Q2: Vehicle tax reductions 0.2725878 0.2612181
-#> 6    1 2009 Q3: School district consolidation repeal 0.3624628 0.4383961
+#> 1    1         2008 Q1: Dirigo Health funding repeal 0.5565439 0.5318419
+#> 2    1                 2008 Q2: Oxford County casino 0.4057344 0.3630177
+#> 3    1            2008 Q3: Water infrastructure bond 0.6355820 0.6236447
+#> 4    1             2009 Q1: Same-sex marriage repeal 0.3228870 0.3216191
+#> 5    1               2009 Q2: Vehicle tax reductions 0.2783155 0.2698416
+#> 6    1 2009 Q3: School district consolidation repeal 0.3413734 0.4034721
 #>        p_lo      p_hi
-#> 1 0.5535221 0.5963974
-#> 2 0.3507761 0.3941433
-#> 3 0.5348951 0.5809097
-#> 4 0.3841579 0.4331620
-#> 5 0.2433978 0.2807406
-#> 6 0.4157835 0.4610603
+#> 1 0.5086269 0.5542335
+#> 2 0.3445964 0.3810912
+#> 3 0.6028763 0.6419015
+#> 4 0.3029876 0.3413916
+#> 5 0.2493335 0.2883374
+#> 6 0.3846210 0.4245340
 ```
 
 **Naming blocs.** The model returns numbers, not names. Give a bloc a
@@ -549,29 +687,29 @@ consolidation – and are worth reading on their own.
 ``` r
 qf <- question_fit(s_ss, maine)
 head(qf, 6)
-#>            question                                       label all_share
-#> 1 REFERENDUM_2017_1                 2017 Q1: York County casino 0.1670998
-#> 2 REFERENDUM_2011_2            2011 Q2: Racetrack slot machines 0.4503344
-#> 3 REFERENDUM_2011_3                    2011 Q3: Lewiston casino 0.3654093
-#> 4 REFERENDUM_2009_2             2009 Q2: Vehicle tax reductions 0.2588771
-#> 5 REFERENDUM_2021_1 2021 Q1: Electric transmission restrictions 0.5917978
-#> 6 REFERENDUM_2018_1                2018 Q1: Universal home care 0.3700421
-#>   spread_data spread_model         r2
-#> 1  0.05258777   0.05696013 0.07436375
-#> 2  0.09940955   0.12829457 0.07488537
-#> 3  0.09406344   0.10474558 0.12826675
-#> 4  0.03662863   0.03825950 0.15816784
-#> 5  0.13523102   0.12509953 0.22787959
-#> 6  0.09864012   0.10636110 0.22815231
+#>            question                                         label all_share
+#> 1 REFERENDUM_2009_2               2009 Q2: Vehicle tax reductions 0.2588771
+#> 2 REFERENDUM_2021_1   2021 Q1: Electric transmission restrictions 0.5917978
+#> 3 REFERENDUM_2018_1                  2018 Q1: Universal home care 0.3700421
+#> 4 REFERENDUM_2023_2 2023 Q2: Foreign government campaign spending 0.8632294
+#> 5 REFERENDUM_2021_3         2021 Q3: Constitutional right to food 0.6081520
+#> 6 REFERENDUM_2023_1        2023 Q1: Voter approval of public debt 0.6548835
+#>   spread_data spread_model        r2
+#> 1  0.06504863   0.07226177 0.3146891
+#> 2  0.23277121   0.23201510 0.3560318
+#> 3  0.17408974   0.17682783 0.3683838
+#> 4  0.06351992   0.05923398 0.3805039
+#> 5  0.17174391   0.17966253 0.4039053
+#> 6  0.10859217   0.10041875 0.4367419
 tail(qf, 3)
 #>             question                                             label
-#> 70 REFERENDUM_2016_6                      2016 Q6: Transportation bond
-#> 71 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
-#> 72 REFERENDUM_2025_2           2025 Q2: Extreme risk protection orders
+#> 70 REFERENDUM_2025_1 2025 Q1: Voter identification and absentee voting
+#> 71 REFERENDUM_2018_3         2018 Q3: Transportation and culverts bond
+#> 72 REFERENDUM_2016_6                      2016 Q6: Transportation bond
 #>    all_share spread_data spread_model        r2
-#> 70 0.6111483   0.2453022    0.2552816 0.8255748
-#> 71 0.3594147   0.3982328    0.3852609 0.8382487
-#> 72 0.6277386   0.4249607    0.4121335 0.8393805
+#> 70 0.3594147   0.4982211    0.4799102 0.9163967
+#> 71 0.6763771   0.2750924    0.2864465 0.9175285
+#> 72 0.6111483   0.3182071    0.3297193 0.9236774
 ```
 
 ## The shape of the blocs: Jensen–Shannon principal coordinates
@@ -618,25 +756,63 @@ c(EM_vs_SS = adjusted_rand(s_em$assignment$bloc, s_ss$assignment$bloc),
   MCMC_vs_SS = adjusted_rand(s_mc$assignment$bloc, s_ss$assignment$bloc),
   EM_vs_MCMC = adjusted_rand(s_em$assignment$bloc, s_mc$assignment$bloc))
 #>   EM_vs_SS MCMC_vs_SS EM_vs_MCMC 
-#>  0.5747470  0.9535434  0.5762644
+#>  0.3471003  0.6578153  0.3367368
 table(SS = s_ss$assignment$bloc, MCMC = s_mc$assignment$bloc)
-#>    MCMC
-#> SS    1   2   3   4   5
-#>   1  72   1   0   0   0
-#>   2   0 103   0   0   0
-#>   3   0   0  55   0   0
-#>   4   0   1   4 119   0
-#>   5   0   0   2   1 104
+#>     MCMC
+#> SS    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+#>   1  14  9  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+#>   2   0 14 17  2  0  0  0  0  0  0  0  0  0  0  0  0
+#>   3   0  0  0 10  0  0  0  0  0  0  0  0  0  0  0  0
+#>   4   0  0  6  0 30  0  0  0  0  0  0  0  0  0  0  0
+#>   5   0  0  0  0  0 15  0  0  0  0  0  0  0  0  0  0
+#>   6   0  0  0  0  0  0 34  0 10  0  0  0  0  0  0  0
+#>   7   0  0  0  0  3  0  0 27  0  1  0  0  0  0  0  0
+#>   8   0  0  0  0  0  0  0  0  0 19  0  0  0  0  0  0
+#>   9   0  0  0  0  0  0  0  0 34  0  0  1 12  0  0  0
+#>   10  0  0  0  0  0  0  0  0  0  0 12  0  0  0  0  0
+#>   11  0  0  0  0  0  0  0  3  1 10  0 19  3  0  0  0
+#>   12  0  0  0  0  0  0  0  0  0  0  0 19  0  0  6  0
+#>   13  0  0  0  0  0  0  0  0  0  0  0  0 26  0  0  0
+#>   14  0  0  0  0  0  0  0  0  0  0  0  2  0 33  0  0
+#>   15  0  0  0  0  0  0  0  0  0  1  0  0  0  1 20  0
+#>   16  0  0  0  0  0  0  0  0  0  0  0  0  0  1  6 41
 ```
 
-The two Bayesian methods agree closely: the MCMC’s representative
-partition has the same five blocs, with a handful of towns on the edges
-assigned differently. The EM fit (six blocs at a fixed $\nu$) agrees
-less, for two reasons the cross-tabulation shows
-(`table(s_ss$assignment$bloc, s_em$assignment$bloc)`): it splits the
-stepping-stone sampler’s bloc 1 into two, and it divides the northern
-and Downeast towns of bloc 3 between a bloc of their own and the
-small-town bloc.
+The MCMC representative partition agrees only moderately with the
+stepping-stone one – not surprising given the mixing problems above. EM
+and the stepping-stone sampler agree even less by the adjusted Rand
+index, but for a different reason, which the cross-tabulation shows:
+
+``` r
+table(SS = s_ss$assignment$bloc, EM = s_em$assignment$bloc)
+#>     EM
+#> SS    1  2  3  4  5  6
+#>   1  23  0  0  0  0  0
+#>   2  16 17  0  0  0  0
+#>   3   0 10  0  0  0  0
+#>   4   0 33  3  0  0  0
+#>   5   0  0  0 15  0  0
+#>   6   0  0 44  0  0  0
+#>   7   0  2 28  1  0  0
+#>   8   0  0  0 16  3  0
+#>   9   0  0 11  0 36  0
+#>   10  0  0  8  0  4  0
+#>   11  0  0  3  2 31  0
+#>   12  0  0  0  6 14  5
+#>   13  0  0  0  0 26  0
+#>   14  0  0  0  0 15 20
+#>   15  0  0  0  0  2 20
+#>   16  0  0  0  0  0 48
+```
+
+Most of the sixteen stepping-stone blocs sit largely inside one of EM’s
+six – nine of them have 90% or more of their towns in a single EM bloc –
+and the rest straddle two neighbouring EM blocs (SS 14, for example,
+splits between EM 5 and 6). EM bloc 1 is SS 1 plus part of SS 2; EM bloc
+6 is SS 16 plus most of SS 14 and 15. Largely, the two are views of the
+same structure at different grains. The adjusted Rand index penalises
+the difference in grain as heavily as genuine disagreement, so read the
+cross-tabulation, not only the index.
 
 # 6. Where to go next
 
@@ -667,4 +843,4 @@ coarsening. *Journal of the American Statistical Association* 114,
 O’Brien, J. (2026). A Bayesian mixture model captures temporal and
 spatial structure of voting blocs within longitudinal referendum data.
 *Political Science Research and Methods*, 1–22.
-doi:10.1017/psrm.2025.10050.
+<doi:10.1017/psrm.2025.10050>.

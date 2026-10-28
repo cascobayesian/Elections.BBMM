@@ -1,23 +1,24 @@
 # data-raw/tutorial_results.R -- the runs behind the tutorial (vignettes/Elections.BBMM.Rmd, TUTORIAL.md),
 # saved slimmed to inst/extdata/maine_tutorial.rds so the tutorial can show real results without
 # rerunning them.  Rscript data-raw/tutorial_results.R [threads]   (from the package root)
-# Run time on an Apple M4 Pro (10 threads): EM about 1 minute; stepping-stone K = 2..10 about
-# 1.5 hours; MCMC a few minutes. Per-K SS fits are cached in data-raw/tutorial_cache/.
+# Run time on an Apple M4 Pro (12 threads): EM about 1 minute; stepping-stone K = 2..20 about 4 hours,
+# plus 1 hour for the two replicates; MCMC about 3 minutes. Per-K SS fits are cached in data-raw/tutorial_cache_z1/.
 pkgload::load_all(quiet = TRUE)
-thr <- as.integer(commandArgs(TRUE)[1]); if (is.na(thr)) thr <- 8L
-cache <- "data-raw/tutorial_cache"; dir.create(cache, showWarnings = FALSE)
+thr <- as.integer(commandArgs(TRUE)[1]); if (is.na(thr)) thr <- 12L
+ZETA <- 1; SS_K <- 2:20; REP_K <- c(16L, 18L)
+cache <- "data-raw/tutorial_cache_z1"; dir.create(cache, showWarnings = FALSE)
 cached <- function(name, expr) { f <- file.path(cache, paste0(name, ".rds"))
   if (file.exists(f)) return(readRDS(f)); v <- expr; saveRDS(v, f); v }
 
-sel <- cached("em_select", bbmm_em_select(maine, K = 1:12, zeta = 0.3, n_starts = 10, seed = 2026, cores = thr))
+sel <- cached("em_select_K1_16", bbmm_em_select(maine, K = 1:16, zeta = ZETA, n_starts = 10, seed = 2026, cores = thr))
 K_em <- sel$selected[["min_share_5%"]]
-fits <- lapply(2:10, function(K) cached(sprintf("ss_K%02d", K),
-  bbmm_ss(maine, K = K, zeta = 0.3, seed = 2026 + K, n_threads = thr, progress = TRUE)))
-reps <- lapply(c(6L, 10L), function(K) cached(sprintf("ss_K%02d_rep2", K),
-  bbmm_ss(maine, K = K, zeta = 0.3, seed = 4026 + K, n_threads = thr, progress = TRUE)))
+fits <- lapply(SS_K, function(K) cached(sprintf("ss_K%02d", K),
+  bbmm_ss(maine, K = K, zeta = ZETA, seed = 2026 + K, n_threads = thr, progress = TRUE)))
+reps <- lapply(REP_K, function(K) cached(sprintf("ss_K%02d_rep2", K),
+  bbmm_ss(maine, K = K, zeta = ZETA, seed = 4026 + K, n_threads = thr, progress = TRUE)))
 ev <- evidence_from_fits(c(fits, reps))
 T_mode <- ev$posterior_T$T[which.max(ev$posterior_T$posterior)]
-mc <- cached("mcmc", bbmm_mcmc(maine, K = T_mode, zeta = 0.3, n_iter = 2000, n_burn = 1000, thin = 2,
+mc <- cached("mcmc", bbmm_mcmc(maine, K = T_mode, zeta = ZETA, n_iter = 2000, n_burn = 1000, thin = 2,
                                n_chains = 4, seed = 2026, n_threads = min(4L, thr), progress = TRUE))
 
 s_em <- bloc_summary(sel$fits[[as.character(K_em)]], maine)

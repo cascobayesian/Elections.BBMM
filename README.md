@@ -55,16 +55,16 @@ The package compiles C++ code, so you need a compiler: Xcode command-line tools 
 library(Elections.BBMM)
 maine                                    # 462 towns x 72 questions
 
-# Fast: tempered EM over K = 1..12, choose K by the 3% rule
-sel <- bbmm_em_select(maine, K = 1:12, zeta = 0.3, n_starts = 10, cores = 4)
-fit <- sel$fits[[as.character(sel$selected[["min_share_3%"]])]]
+# Fast: EM over K = 1..16, choose K by the 5% rule
+sel <- bbmm_em_select(maine, K = 1:16, zeta = 1, n_starts = 10, cores = 4)
+fit <- sel$fits[[as.character(sel$selected[["min_share_5%"]])]]
 s <- bloc_summary(fit, maine)
 plot_bloc_map(s, maine_towns())
 plot_bloc_profiles(s)
 plot_js_pca(maine, s)
 
-# Slow, fully Bayesian: evidence for each K by stepping-stone SMC (about an hour on 8 threads)
-ev <- bbmm_evidence(maine, K = 2:10, zeta = 0.3, n_threads = 8)
+# Slow, fully Bayesian: evidence for each K by stepping-stone SMC (about four hours on 12 threads)
+ev <- bbmm_evidence(maine, K = 2:20, zeta = 1, n_threads = 12)
 plot_evidence(ev)
 s_ss <- bloc_summary(ev, maine)
 ```
