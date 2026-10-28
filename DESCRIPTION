@@ -3,17 +3,18 @@ Type: Package
 Title: Voting Blocs from Referendum Returns with Beta-Binomial Mixtures
 Version: 1.0.0
 Authors@R: c(
-    person("John D.", "O'Brien", email = "jobrien@bowdoin.edu", role = c("aut", "cre", "cph")),
+    person("John D.", "O'Brien", email = "jobrien@bowdoin.edu", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0001-8958-7749")),
     person("Nathan", "Kellerman", role = "ctb",
-           comment = paste("EM algorithm, developed in an undergraduate honors thesis",
+           comment = paste("core EM algorithm, contributed as his undergraduate honors thesis",
                            "'A Rapid Algorithm for Inferring Latent Mixture Structure in",
                            "Replicate Social Science Data' (Bowdoin College, 2026)")),
     person("Aaron", "Kaufman", role = "ctb",
-           comment = "New York University Abu Dhabi; tools for exploring model results"))
+           comment = "New York University Abu Dhabi; developed many of the tools for exploring model results"))
 Description: Identifies voting blocs - groups of places that vote alike
-    across many referendums - by fitting a beta-binomial mixture model to a
-    panel of two-option election returns (units such as precincts or towns by
-    questions). Provides a tempered expectation-maximisation fit with a fixed
+    across many referendums - by fitting the beta-binomial mixture model of
+    O'Brien (2026) <doi:10.1017/psrm.2025.10050> to a panel of two-option
+    election returns (units such as precincts or towns by questions). Provides a tempered expectation-maximisation fit with a fixed
     dispersion and model-selection rules, a fixed-K Markov chain Monte Carlo
     sampler for the coarsened posterior of Miller and Dunson (2019)
     <doi:10.1080/01621459.2018.1469995> with split-merge moves after Jain

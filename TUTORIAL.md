@@ -663,3 +663,8 @@ Computational and Graphical Statistics* 13, 158–182.
 Miller, J. W. and Dunson, D. B. (2019). Robust Bayesian inference via
 coarsening. *Journal of the American Statistical Association* 114,
 1113–1125.
+
+O’Brien, J. (2026). A Bayesian mixture model captures temporal and
+spatial structure of voting blocs within longitudinal referendum data.
+*Political Science Research and Methods*, 1–22.
+doi:10.1017/psrm.2025.10050.

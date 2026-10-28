@@ -1,0 +1,12 @@
+bibentry(
+  bibtype = "Article",
+  title = "A {B}ayesian mixture model captures temporal and spatial structure of voting blocs within longitudinal referendum data",
+  author = person("John", "O'Brien"),
+  journal = "Political Science Research and Methods",
+  year = "2026",
+  pages = "1--22",
+  doi = "10.1017/psrm.2025.10050",
+  textVersion = paste("O'Brien, J. (2026). A Bayesian mixture model captures temporal and spatial structure",
+                      "of voting blocs within longitudinal referendum data.",
+                      "Political Science Research and Methods, 1-22. doi:10.1017/psrm.2025.10050")
+)

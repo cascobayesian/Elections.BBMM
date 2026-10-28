@@ -36,6 +36,12 @@ work on the output of any of the three engines.
 The package ships Maine's 72 statewide referendums of 2008--2025 by town
 ([maine]) with town boundaries ([maine_towns()]).
 }
+\references{
+O'Brien, J. (2026). A Bayesian mixture model captures temporal
+  and spatial structure of voting blocs within longitudinal referendum data.
+  \emph{Political Science Research and Methods}, 1--22.
+  \doi{10.1017/psrm.2025.10050}
+}
 \seealso{
 Useful links:
 \itemize{
@@ -45,11 +51,17 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: John D. O'Brien \email{jobrien@bowdoin.edu} [copyright holder]
+\strong{Maintainer}: John D. O'Brien \email{jobrien@bowdoin.edu} (\href{https://orcid.org/0000-0001-8958-7749}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item John D. O'Brien \email{jobrien@bowdoin.edu} [copyright holder]
+  \item John D. O'Brien \email{jobrien@bowdoin.edu} (\href{https://orcid.org/0000-0001-8958-7749}{ORCID}) [copyright holder]
+}
+
+Other contributors:
+\itemize{
+  \item Nathan Kellerman (core EM algorithm, contributed as his undergraduate honors thesis 'A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data' (Bowdoin College, 2026)) [contributor]
+  \item Aaron Kaufman (New York University Abu Dhabi; developed many of the tools for exploring model results) [contributor]
 }
 
 }

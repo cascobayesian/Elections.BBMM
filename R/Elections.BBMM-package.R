@@ -29,6 +29,11 @@
 #' The package ships Maine's 72 statewide referendums of 2008--2025 by town
 #' ([maine]) with town boundaries ([maine_towns()]).
 #'
+#' @references O'Brien, J. (2026). A Bayesian mixture model captures temporal
+#'   and spatial structure of voting blocs within longitudinal referendum data.
+#'   \emph{Political Science Research and Methods}, 1--22.
+#'   \doi{10.1017/psrm.2025.10050}
+#'
 #' @keywords internal
 #' @useDynLib Elections.BBMM, .registration = TRUE
 #' @importFrom Rcpp sourceCpp

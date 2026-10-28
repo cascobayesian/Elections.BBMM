@@ -81,11 +81,15 @@ The stepping-stone code has been checked against exact evidences computed by enu
 
 ## Acknowledgements
 
-Nathan Kellerman contributed to the EM algorithm as part of an undergraduate honors thesis, *A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data* (Bowdoin College, 2026). Aaron Kaufman (New York University Abu Dhabi) helped develop the tools for exploring the model results.
+Nathan Kellerman contributed the core EM algorithm as his undergraduate honors thesis, *A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data* (Bowdoin College, 2026). Aaron Kaufman (New York University Abu Dhabi) developed many of the tools for exploring the model results.
 
 ## Citation
 
-Kaufman, A. and O'Brien, J. D. The structure of conflict in local politics. Working paper.
+If you use the package, please cite the paper that introduced the model:
+
+O'Brien, J. (2026). A Bayesian mixture model captures temporal and spatial structure of voting blocs within longitudinal referendum data. *Political Science Research and Methods*, 1–22. [doi:10.1017/psrm.2025.10050](https://doi.org/10.1017/psrm.2025.10050)
+
+In R: `citation("Elections.BBMM")`.
 
 ## License
 
