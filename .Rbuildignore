@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^LICENSE$
+^README\.Rmd$
+^TUTORIAL\.Rmd$
+^TUTORIAL\.md$
+^TUTORIAL_files$
+^tutorial$
+^cran-comments\.md$
+^\.github$
+^.*\.tar\.gz$
+^.*\.Rcheck$
