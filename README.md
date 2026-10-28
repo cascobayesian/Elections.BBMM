@@ -86,7 +86,7 @@ Nathan Kellerman contributed the EM algorithm as part of an undergraduate honors
 
 ## Citations
 
-O'Brien, John. 2026. "A Bayesian Mixture Model Captures Temporal and Spatial Structure of Voting Blocs within Longitudinal Referendum Data." Political Science Research and Methods, 1–22. https://doi.org/10.1017/psrm.2025.10050.
+John D. O'Brien. 2026. "A Bayesian Mixture Model Captures Temporal and Spatial Structure of Voting Blocs within Longitudinal Referendum Data." Political Science Research and Methods, 1–22. https://doi.org/10.1017/psrm.2025.10050.
 
 Aaron Kaufman and John D. O'Brien. "The structure of conflict in local politics." Working paper.
 
