@@ -5,11 +5,12 @@ The Elections.BBMM package fits a beta-binomial mixture model (BBMM) to longitud
 * the distribution on the number of voting blocs;
 * which bloc each district belongs to, and how certain that assignment is;
 * each bloc's expected Yes share, with uncertainty, on every question, and how tightly its districts cluster around it;
-* which questions set each bloc apart, and which questions cut across the blocs (questions that behave unusually from the model's point of view);
+* which questions set each bloc apart, and which questions cut across the blocs;
+* which questions that behave unusually from the model's point of view;
 * an information-theoretic (Jensen–Shannon) view of how districts differ and where the blocs sit in that space; and
 * the co-clustering structure of the districts: which ones always vote together and which move between blocs.
 
-This kind of analysis might appeal to political scientists, sociologists or historians. Why might you want to perform it?
+This kind of analysis might appeal to political scientists, sociologists or historians. 
 
 * Identify political voting blocs and their presence in a set of communities;
 * Use voting blocs to identify long-term political and cultural structures and dynamics;
@@ -81,7 +82,7 @@ The stepping-stone code has been checked against exact evidences computed by enu
 
 ## Acknowledgements
 
-Nathan Kellerman contributed to the EM algorithm as part of an undergraduate honors thesis, *A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data* (Bowdoin College, 2026). Aaron Kaufman (New York University Abu Dhabi) helped develop the tools for exploring the model results.
+Nathan Kellerman contributed the EM algorithm as part of an undergraduate honors thesis, *A Rapid Algorithm for Inferring Latent Mixture Structure in Replicate Social Science Data* (Bowdoin College, 2026). Aaron Kaufman (New York University Abu Dhabi) helped develop the tools for exploring the model results.
 
 ## Citation
 
